@@ -16,13 +16,17 @@ builder.Services.AddScoped<IExcelExportService, ExcelExportService>();
 builder.Services.AddScoped<ITempFileService, TempFileService>();
 
 // Configure CORS for frontend
+var corsOrigins = builder.Configuration["CORS_ORIGINS"]?.Split(',') ?? 
+    new[] { "http://localhost:8080", "http://127.0.0.1:8080" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(corsOrigins)
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 

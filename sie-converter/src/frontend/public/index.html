@@ -583,7 +583,11 @@
                 formData.append('verificationDescriptionColumnName', document.getElementById('verificationDescriptionColumnName').value);
                 formData.append('transactionAccountColumnName', document.getElementById('transactionAccountColumnName').value);
                 
-                const API_URL = 'http://localhost:5101';
+                // Auto-detect API URL based on environment
+                const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                    ? 'http://localhost:5101' 
+                    : 'https://sie-converter-api.onrender.com';
+                
                 const response = await fetch(`${API_URL}/api/conversion/convert`, {
                     method: 'POST',
                     body: formData
