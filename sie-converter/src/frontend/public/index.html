@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Säker SIE till Excel konverterare för finansiella data">
+    <title>SIE till Excel Konverterare</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+        
+        .security-badge svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+        
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .upload-area input[type="file"] {
+            display: none;
+        }
+        
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 15px;
+            color: #999;
+        }
+        
+        .upload-text {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .upload-text strong {
+            color: #667eea;
+        }
+        
+        .file-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .file-info.show {
+            display: block;
+        }
+        
+        .file-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .file-size {
+            color: #666;
+            font-size: 13px;
+        }
+        
+        .options-section {
+            margin-bottom: 25px;
+        }
+        
+        .options-section h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .option-group {
+            margin-bottom: 20px;
+        }
+        
+        .option-group label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+        }
+        
+        .checkbox-item label {
+            font-weight: normal;
+            margin: 0;
+            cursor: pointer;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .progress {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .progress.show {
+            display: block;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .success-message.show {
+            display: block;
+        }
+        
+        .toggle-advanced {
+            color: #667eea;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .toggle-advanced:hover {
+            text-decoration: underline;
+        }
+        
+        .advanced-options {
+            display: none;
+        }
+        
+        .advanced-options.show {
+            display: block;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .input-group input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .input-group input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .column-mapping-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SIE till Excel Konverterare</h1>
+        <p class="subtitle">Konvertera SIE-filer (SIE4-format) till Excel säkert och enkelt</p>
+        
+        <div class="security-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M9 12l2 2 4-4"/>
+            </svg>
+            Säker konvertering - filer sparas inte på servern
+        </div>
+        
+        <div class="upload-area" id="uploadArea">
+            <input type="file" id="fileInput" accept=".sie,.se,.si,.txt">
+            <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p class="upload-text">
+                <strong>Klicka för att välja fil</strong> eller dra och släpp här<br>
+                Stödjer SIE4-format (.sie, .se, .si)
+            </p>
+        </div>
+        
+        <div class="file-info" id="fileInfo">
+            <div class="file-name" id="fileName"></div>
+            <div class="file-size" id="fileSize"></div>
+        </div>
+        
+        <div class="options-section">
+            <h3>Välj data att inkludera</h3>
+            <div class="checkbox-grid">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="includeAccounts" checked>
+                    <label for="includeAccounts">Konton</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="includeVerifications" checked>
+                    <label for="includeVerifications">Verifikationer</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="includeOpeningBalances" checked>
+                    <label for="includeOpeningBalances">Ingående saldon</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="includeClosingBalances" checked>
+                    <label for="includeClosingBalances">Utgående saldon</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="includeResults" checked>
+                    <label for="includeResults">Resultat</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="includeDimensions" checked>
+                    <label for="includeDimensions">Dimensioner</label>
+                </div>
+            </div>
+        </div>
+        
+        <span class="toggle-advanced" id="toggleAdvanced">▼ Visa avancerade alternativ</span>
+        
+        <div class="advanced-options" id="advancedOptions">
+            <div class="options-section">
+                <h3>Kolumnnamn (anpassa för ditt företag)</h3>
+                <div class="column-mapping-grid">
+                    <div class="input-group">
+                        <label>Kontonummer</label>
+                        <input type="text" id="accountNumberColumnName" value="Kontonummer">
+                    </div>
+                    <div class="input-group">
+                        <label>Kontonamn</label>
+                        <input type="text" id="accountNameColumnName" value="Kontonamn">
+                    </div>
+                    <div class="input-group">
+                        <label>Belopp</label>
+                        <input type="text" id="transactionAmountColumnName" value="Belopp">
+                    </div>
+                    <div class="input-group">
+                        <label>Datum</label>
+                        <input type="text" id="verificationDateColumnName" value="Datum">
+                    </div>
+                    <div class="input-group">
+                        <label>Beskrivning</label>
+                        <input type="text" id="verificationDescriptionColumnName" value="Beskrivning">
+                    </div>
+                    <div class="input-group">
+                        <label>Konto (transaktion)</label>
+                        <input type="text" id="transactionAccountColumnName" value="Konto">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="options-section">
+                <h3>Formatering</h3>
+                <div class="checkbox-grid">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="includeHeaders" checked>
+                        <label for="includeHeaders">Inkludera rubriker</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="autoFitColumns" checked>
+                        <label for="autoFitColumns">Anpassa kolumnbredd</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="formatCurrency" checked>
+                        <label for="formatCurrency">Formatera valuta</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="flattenTransactions" checked>
+                        <label for="flattenTransactions">Platta ut transaktioner (en rad per transaktion)</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn btn-primary" id="convertBtn" disabled>
+            Konvertera till Excel
+        </button>
+        
+        <div class="progress" id="progress">
+            <div class="spinner"></div>
+            <p>Konverterar fil...</p>
+        </div>
+        
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+        
+        <footer>
+            Säker SIE-konvertering • Filer sparas inte permanent • Max 50 MB
+        </footer>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const convertBtn = document.getElementById('convertBtn');
+        const progress = document.getElementById('progress');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const toggleAdvanced = document.getElementById('toggleAdvanced');
+        const advancedOptions = document.getElementById('advancedOptions');
+        
+        let selectedFile = null;
+        
+        // Toggle advanced options
+        toggleAdvanced.addEventListener('click', () => {
+            advancedOptions.classList.toggle('show');
+            toggleAdvanced.textContent = advancedOptions.classList.contains('show') 
+                ? '▲ Dölj avancerade alternativ' 
+                : '▼ Visa avancerade alternativ';
+        });
+        
+        // File upload handling
+        uploadArea.addEventListener('click', (e) => {
+            // Prevent triggering if clicking on the file input itself
+            if (e.target.tagName !== 'INPUT') {
+                document.getElementById('fileInput').click();
+            }
+        });
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            // Validate file extension
+            const validExtensions = ['.sie', '.se', '.si', '.txt'];
+            const ext = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!validExtensions.includes(ext)) {
+                showError('Ogiltigt filformat. Vänligen välj en SIE-fil (.sie, .se, .si)');
+                return;
+            }
+            
+            // Check file size (50MB limit)
+            if (file.size > 50 * 1024 * 1024) {
+                showError('Filen är för stor. Maxgräns är 50 MB.');
+                return;
+            }
+            
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.classList.add('show');
+            uploadArea.style.borderColor = '#667eea';
+            uploadArea.style.background = '#f8f9ff';
+            convertBtn.disabled = false;
+            hideMessages();
+            
+            // Visual feedback
+            uploadArea.innerHTML = `
+                <input type="file" id="fileInput" accept=".sie,.se,.si,.txt">
+                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <p class="upload-text">
+                    <strong>Fil vald:</strong> ${file.name}<br>
+                    Klicka för att byta fil eller dra en ny fil hit
+                </p>
+            `;
+            
+            // Re-attach event listeners
+            document.getElementById('fileInput').addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Convert button
+        convertBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            
+            hideMessages();
+            progress.classList.add('show');
+            convertBtn.disabled = true;
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                
+                // Add options
+                formData.append('includeAccounts', document.getElementById('includeAccounts').checked);
+                formData.append('includeVerifications', document.getElementById('includeVerifications').checked);
+                formData.append('includeOpeningBalances', document.getElementById('includeOpeningBalances').checked);
+                formData.append('includeClosingBalances', document.getElementById('includeClosingBalances').checked);
+                formData.append('includeResults', document.getElementById('includeResults').checked);
+                formData.append('includeDimensions', document.getElementById('includeDimensions').checked);
+                formData.append('includeObjects', document.getElementById('includeDimensions').checked);
+                
+                // Advanced options
+                formData.append('includeHeaders', document.getElementById('includeHeaders').checked);
+                formData.append('autoFitColumns', document.getElementById('autoFitColumns').checked);
+                formData.append('formatCurrency', document.getElementById('formatCurrency').checked);
+                formData.append('flattenTransactions', document.getElementById('flattenTransactions').checked);
+                
+                // Custom column names
+                formData.append('accountNumberColumnName', document.getElementById('accountNumberColumnName').value);
+                formData.append('accountNameColumnName', document.getElementById('accountNameColumnName').value);
+                formData.append('transactionAmountColumnName', document.getElementById('transactionAmountColumnName').value);
+                formData.append('verificationDateColumnName', document.getElementById('verificationDateColumnName').value);
+                formData.append('verificationDescriptionColumnName', document.getElementById('verificationDescriptionColumnName').value);
+                formData.append('transactionAccountColumnName', document.getElementById('transactionAccountColumnName').value);
+                
+                const API_URL = 'http://localhost:5101';
+                const response = await fetch(`${API_URL}/api/conversion/convert`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Konvertering misslyckades');
+                }
+                
+                // Download file
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = response.headers.get('content-disposition')?.split('filename="')[1]?.replace('"', '') || 'sie_export.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                showSuccess('Filen har konverterats och laddats ner!');
+                
+            } catch (error) {
+                showError(error.message || 'Ett fel uppstod vid konvertering');
+            } finally {
+                progress.classList.remove('show');
+                convertBtn.disabled = false;
+            }
+        });
+        
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            successMessage.classList.remove('show');
+        }
+        
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.classList.add('show');
+            errorMessage.classList.remove('show');
+        }
+        
+        function hideMessages() {
+            errorMessage.classList.remove('show');
+            successMessage.classList.remove('show');
+        }
+    </script>
+</body>
+</html>

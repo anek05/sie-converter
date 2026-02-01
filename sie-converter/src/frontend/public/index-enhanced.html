@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced SIE to Excel Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .section {
+            margin: 25px 0;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            background-color: #fafafa;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: #fafafa;
+        }
+        .upload-area:hover {
+            border-color: #007bff;
+            background-color: #f0f8ff;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .file-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .file-label:hover {
+            background-color: #0056b3;
+        }
+        button {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .btn-primary {
+            background-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0069d9;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .progress {
+            height: 100%;
+            background-color: #007bff;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 10px 0;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .checkbox-item input {
+            margin-right: 5px;
+        }
+        .mapping-option {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border-left: 3px solid #007bff;
+        }
+        .mapping-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .preview-table th, .preview-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .preview-table th {
+            background-color: #f2f2f2;
+        }
+        .tab {
+            display: none;
+        }
+        .tab.active {
+            display: block;
+        }
+        .tab-buttons {
+            margin-bottom: 20px;
+        }
+        .tab-button {
+            background-color: #e9ecef;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+        }
+        .tab-button.active {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Advanced SIE to Excel Converter</h1>
+        <p>Upload your SIE file and customize how the Excel output should look. Perfect for financial professionals!</p>
+        
+        <!-- Tab Navigation -->
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="switchTab('upload')">Upload & Convert</button>
+            <button class="tab-button" onclick="switchTab('customize')">Customize Output</button>
+            <button class="tab-button" onclick="switchTab('preview')">Preview</button>
+        </div>
+        
+        <!-- Upload Tab -->
+        <div id="upload" class="tab active">
+            <div class="upload-area" id="dropArea">
+                <p>Drag & drop your .sie file here</p>
+                <p>or</p>
+                <input type="file" id="fileInput" accept=".sie">
+                <label for="fileInput" class="file-label">Choose File</label>
+            </div>
+            
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="includeAccounts" checked>
+                    <label for="includeAccounts">Include Accounts Sheet</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="includeTransactions" checked>
+                    <label for="includeTransactions">Include Transactions Sheet</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="includeObjects" checked>
+                    <label for="includeObjects">Include Objects Sheet</label>
+                </div>
+            </div>
+            
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress" id="progress"></div>
+            </div>
+            
+            <button id="convertBtn" disabled>Convert to Excel</button>
+            <button id="resetBtn" class="btn-secondary">Reset</button>
+        </div>
+        
+        <!-- Customize Tab -->
+        <div id="customize" class="tab">
+            <h3>Customize Excel Output</h3>
+            
+            <div class="section">
+                <h4>Column Mapping</h4>
+                <p>Map SIE fields to custom column names for your Excel sheets:</p>
+                
+                <div class="mapping-option">
+                    <h5>Accounts Sheet Columns</h5>
+                    <div class="mapping-fields">
+                        <div>
+                            <label>Account Number Column Name:</label>
+                            <input type="text" id="accountNumCol" value="Account Number">
+                        </div>
+                        <div>
+                            <label>Account Name Column Name:</label>
+                            <input type="text" id="accountNameCol" value="Account Name">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mapping-option">
+                    <h5>Transactions Sheet Columns</h5>
+                    <div class="mapping-fields">
+                        <div>
+                            <label>Date Column Name:</label>
+                            <input type="text" id="dateCol" value="Date">
+                        </div>
+                        <div>
+                            <label>Amount Column Name:</label>
+                            <input type="text" id="amountCol" value="Amount">
+                        </div>
+                        <div>
+                            <label>Description Column Name:</label>
+                            <input type="text" id="descCol" value="Description">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mapping-option">
+                    <h5>Formatting Options</h5>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="includeHeaders" checked>
+                            <label for="includeHeaders">Include Headers</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="autoFitCols" checked>
+                            <label for="autoFitCols">Auto-fit Column Widths</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="formatCurrency">
+                            <label for="formatCurrency">Format Amounts as Currency</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn-primary" onclick="switchTab('upload')">Back to Upload</button>
+        </div>
+        
+        <!-- Preview Tab -->
+        <div id="preview" class="tab">
+            <h3>Excel Output Preview</h3>
+            <p>This is how your converted file will look based on your selections:</p>
+            
+            <div class="section">
+                <h4>Sample Transactions Data</h4>
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th id="previewDateCol">Date</th>
+                            <th id="previewAmountCol">Amount</th>
+                            <th id="previewDescCol">Description</th>
+                            <th>Account</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2023-01-15</td>
+                            <td>1,250.00</td>
+                            <td>Kundbetalning Faktura 123</td>
+                            <td>1510</td>
+                        </tr>
+                        <tr>
+                            <td>2023-01-16</td>
+                            <td>-500.00</td>
+                            <td>Inköp kontant</td>
+                            <td>1510</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <button class="btn-primary" onclick="switchTab('customize')">Customize Further</button>
+            <button id="finalConvertBtn" class="btn-primary">Convert with Current Settings</button>
+        </div>
+        
+        <div id="status" class="status" style="display: none;"></div>
+    </div>
+
+    <script>
+        // State management
+        const state = {
+            selectedFile: null,
+            includeAccounts: true,
+            includeTransactions: true,
+            includeObjects: true,
+            customMappings: {
+                accountNumCol: 'Account Number',
+                accountNameCol: 'Account Name',
+                dateCol: 'Date',
+                amountCol: 'Amount',
+                descCol: 'Description'
+            },
+            formattingOptions: {
+                includeHeaders: true,
+                autoFitCols: true,
+                formatCurrency: false
+            }
+        };
+
+        // DOM Elements
+        const fileInput = document.getElementById('fileInput');
+        const dropArea = document.getElementById('dropArea');
+        const convertBtn = document.getElementById('convertBtn');
+        const finalConvertBtn = document.getElementById('finalConvertBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progress = document.getElementById('progress');
+        const statusDiv = document.getElementById('status');
+
+        // Initialize the app
+        function initApp() {
+            setupEventListeners();
+            updateButtonStates();
+        }
+
+        // Set up all event listeners
+        function setupEventListeners() {
+            // File input handling
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    state.selectedFile = this.files[0];
+                    updateButtonStates();
+                    showStatus(`Selected file: ${state.selectedFile.name}`, 'success');
+                }
+            });
+
+            // Drag and drop functionality
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            dropArea.addEventListener('drop', handleDrop, false);
+
+            // Checkbox event listeners
+            document.getElementById('includeAccounts').addEventListener('change', function() {
+                state.includeAccounts = this.checked;
+            });
+            
+            document.getElementById('includeTransactions').addEventListener('change', function() {
+                state.includeTransactions = this.checked;
+            });
+            
+            document.getElementById('includeObjects').addEventListener('change', function() {
+                state.includeObjects = this.checked;
+            });
+
+            // Mapping input listeners
+            document.getElementById('accountNumCol').addEventListener('input', function() {
+                state.customMappings.accountNumCol = this.value || 'Account Number';
+            });
+            
+            document.getElementById('accountNameCol').addEventListener('input', function() {
+                state.customMappings.accountNameCol = this.value || 'Account Name';
+            });
+            
+            document.getElementById('dateCol').addEventListener('input', function() {
+                state.customMappings.dateCol = this.value || 'Date';
+                document.getElementById('previewDateCol').textContent = this.value || 'Date';
+            });
+            
+            document.getElementById('amountCol').addEventListener('input', function() {
+                state.customMappings.amountCol = this.value || 'Amount';
+                document.getElementById('previewAmountCol').textContent = this.value || 'Amount';
+            });
+            
+            document.getElementById('descCol').addEventListener('input', function() {
+                state.customMappings.descCol = this.value || 'Description';
+                document.getElementById('previewDescCol').textContent = this.value || 'Description';
+            });
+
+            // Conversion buttons
+            convertBtn.addEventListener('click', startConversion);
+            finalConvertBtn.addEventListener('click', startConversion);
+            resetBtn.addEventListener('click', resetForm);
+        }
+
+        // Helper functions
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight() {
+            dropArea.style.borderColor = '#007bff';
+            dropArea.style.backgroundColor = '#f0f8ff';
+        }
+
+        function unhighlight() {
+            dropArea.style.borderColor = '#ccc';
+            dropArea.style.backgroundColor = '#fafafa';
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length) {
+                state.selectedFile = files[0];
+                fileInput.files = files; // Update the input element's files
+                updateButtonStates();
+                showStatus(`Selected file: ${state.selectedFile.name}`, 'success');
+            }
+        }
+
+        function updateButtonStates() {
+            convertBtn.disabled = !state.selectedFile;
+            finalConvertBtn.disabled = !state.selectedFile;
+        }
+
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        function hideStatus() {
+            statusDiv.style.display = 'none';
+        }
+
+        function resetForm() {
+            state.selectedFile = null;
+            fileInput.value = '';
+            document.getElementById('includeAccounts').checked = true;
+            document.getElementById('includeTransactions').checked = true;
+            document.getElementById('includeObjects').checked = true;
+            state.includeAccounts = true;
+            state.includeTransactions = true;
+            state.includeObjects = true;
+            updateButtonStates();
+            hideStatus();
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Activate selected button
+            event.target.classList.add('active');
+        }
+
+        // Conversion function
+        async function startConversion() {
+            if (!state.selectedFile) {
+                showStatus('Please select a file first', 'error');
+                return;
+            }
+
+            // Reset UI
+            hideStatus();
+            progressBar.style.display = 'block';
+            convertBtn.disabled = true;
+            finalConvertBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', state.selectedFile);
+
+            // Add customization options to the request
+            formData.append('includeAccounts', state.includeAccounts);
+            formData.append('includeTransactions', state.includeTransactions);
+            formData.append('includeObjects', state.includeObjects);
+            formData.append('accountNumCol', state.customMappings.accountNumCol);
+            formData.append('accountNameCol', state.customMappings.accountNameCol);
+            formData.append('dateCol', state.customMappings.dateCol);
+            formData.append('amountCol', state.customMappings.amountCol);
+            formData.append('descCol', state.customMappings.descCol);
+            formData.append('includeHeaders', state.formattingOptions.includeHeaders);
+            formData.append('autoFitCols', state.formattingOptions.autoFitCols);
+            formData.append('formatCurrency', state.formattingOptions.formatCurrency);
+
+            try {
+                // Update progress
+                progress.style.width = '30%';
+                
+                const response = await fetch('/api/conversion/sie-to-excel', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                progress.style.width = '60%';
+
+                if (response.ok) {
+                    // Download the Excel file
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = state.selectedFile.name.replace('.sie', '.xlsx');
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+
+                    progress.style.width = '100%';
+                    setTimeout(() => {
+                        progressBar.style.display = 'none';
+                        showStatus('Conversion successful! File downloaded.', 'success');
+                        resetForm();
+                    }, 500);
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Conversion failed');
+                }
+            } catch (error) {
+                progressBar.style.display = 'none';
+                showStatus(`Error: ${error.message}`, 'error');
+                convertBtn.disabled = false;
+                finalConvertBtn.disabled = false;
+            }
+        }
+
+        // Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "sie-converter-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for SIE to Excel converter",
+  "main": "index.html",
+  "scripts": {
+    "start": "http-server ./public -p 3000",
+    "dev": "http-server ./public -p 3000 -c-1"
+  },
+  "keywords": [
+    "sie",
+    "excel",
+    "converter",
+    "finance",
+    "sweden"
+  ],
+  "author": "Omnissiah",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

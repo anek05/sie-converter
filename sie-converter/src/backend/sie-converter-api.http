@@ -1,0 +1,6 @@
+@sie_converter_api_HostAddress = http://localhost:5101
+
+GET {{sie_converter_api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
