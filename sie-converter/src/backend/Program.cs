@@ -15,18 +15,24 @@ builder.Services.AddScoped<ISieParserService, SieParserService>();
 builder.Services.AddScoped<IExcelExportService, ExcelExportService>();
 builder.Services.AddScoped<ITempFileService, TempFileService>();
 
-// Configure CORS for frontend
-var corsOrigins = builder.Configuration["CORS_ORIGINS"]?.Split(',') ?? 
+// Configure CORS for frontend - allow specific origins
+var corsOrigins = builder.Configuration["CORS_ORIGINS"]?.Split(',', StringSplitOptions.RemoveEmptyEntries) ?? 
     new[] { "http://localhost:8080", "http://127.0.0.1:8080" };
+
+// Add Render default origins if not already present
+var defaultOrigins = new List<string>(corsOrigins);
+if (!defaultOrigins.Contains("https://sie-converter.onrender.com"))
+    defaultOrigins.Add("https://sie-converter.onrender.com");
+if (!defaultOrigins.Contains("https://sie-converter-api.onrender.com"))
+    defaultOrigins.Add("https://sie-converter-api.onrender.com");
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(corsOrigins)
+        policy.WithOrigins(defaultOrigins.ToArray())
               .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
+              .AllowAnyHeader();
     });
 });
 
@@ -38,6 +44,9 @@ builder.WebHost.ConfigureKestrel(options =>
 
 var app = builder.Build();
 
+// CORS must be first to handle preflight requests
+app.UseCors("AllowFrontend");
+
 // Security headers middleware
 app.Use(async (context, next) =>
 {
@@ -45,7 +54,6 @@ app.Use(async (context, next) =>
     context.Response.Headers.Append("X-Frame-Options", "DENY");
     context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
     context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
-    context.Response.Headers.Append("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'");
     
     await next();
 });
@@ -56,7 +64,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
