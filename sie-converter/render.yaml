@@ -6,7 +6,7 @@ services:
   - type: web
     name: sie-converter-api
     runtime: docker
-    rootDir: src/backend
+    rootDir: sie-converter/src/backend
     dockerfilePath: ./Dockerfile
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
@@ -23,7 +23,7 @@ services:
   # Frontend static site
   - type: static
     name: sie-converter
-    rootDir: src/frontend/public
+    rootDir: sie-converter/src/frontend/public
     buildCommand: echo "No build needed"
     staticPublishPath: .
     envVars:
