@@ -15,8 +15,8 @@ RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
-# Create non-root user for security
-RUN adduser --disabled-password --gecos "" appuser && chown -R appuser /app
+# Create non-root user for security (using useradd which is available in aspnet images)
+RUN useradd -m -s /bin/bash appuser && chown -R appuser /app
 USER appuser
 
 # Copy published files
@@ -25,9 +25,9 @@ COPY --from=build /app/publish .
 # Expose port
 EXPOSE 8080
 
-# Health check
+# Health check (using wget since curl may not be available)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8080/api/conversion/options || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/conversion/options || exit 1
 
 # Run the application
 ENTRYPOINT ["dotnet", "sie-converter-api.dll"]
